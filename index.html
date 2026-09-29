@@ -245,15 +245,16 @@
         });
       }
 
-      var mo = new MutationObserver(function(){
+      // Esta plataforma reconstroi o <head> (e o restante do documento) depois do
+      // carregamento inicial, entao um script solto aqui pode acabar rodando antes do
+      // container existir, ou perder mutacoes se o no observado for substituido. Poll
+      // simples e continuo (mesmo padrao ja usado no watchdog do NCDB) e o jeito
+      // confiavel de pegar o container sempre que ele aparecer (inclusive de novo,
+      // toda vez que a home for reaberta).
+      setInterval(function(){
         var el = document.getElementById('nc-drift-wall');
         if (el && !el.__ncDwMounted) mount(el);
-      });
-      mo.observe(document.documentElement, { childList: true, subtree: true });
-      document.addEventListener('DOMContentLoaded', function(){
-        var el = document.getElementById('nc-drift-wall');
-        if (el) mount(el);
-      });
+      }, 400);
     })();
   </script>
 
