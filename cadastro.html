@@ -19,7 +19,7 @@
         firebase.initializeApp(firebaseConfig);
         var db = firebase.firestore();
         function docToObj(doc){ var d = doc.data(); d.id = doc.id; return d; }
-        window.NCDB = {
+        var realNCDB = {
           ready: true,
           listCadastros: function(status){
             return db.collection('cadastros').where('status','==',status).get().then(function(snap){
@@ -45,6 +45,16 @@
             return db.collection('textos').doc('site').set(map, { merge: true });
           }
         };
+        // O bundler as vezes reinstala o proprio window.NCDB (mock generico) depois que a pagina
+        // termina de montar, sobrescrevendo o nosso. Reafirma o NCDB real por alguns segundos para
+        // garantir que o nosso seja sempre o que fica valendo.
+        window.NCDB = realNCDB;
+        var reassertCount = 0;
+        var reassertTimer = setInterval(function(){
+          if (window.NCDB !== realNCDB) window.NCDB = realNCDB;
+          reassertCount++;
+          if (reassertCount > 40) clearInterval(reassertTimer);
+        }, 250);
       } catch (e) {
         console.error('[NCDB] falha ao iniciar Firebase:', e);
       }
